@@ -8,7 +8,7 @@ import time
 import random
 
 #! The following two lines are different among regions:
-from functions_nominstep import *
+from functions_deterministic import *
 import parameters_indonesia as P
 
 #! This function submits multiple "sub_jobs" to the cluster:

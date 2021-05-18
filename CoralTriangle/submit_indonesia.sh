@@ -2,12 +2,12 @@
 #SBATCH -N 1
 #SBATCH -c 1
 #SBATCH -t 14-00:00:00
-#SBATCH --partition=p_deenr_1 
+#SBATCH --partition=p_mlp195
 
 # This is where you specify the number of cores
 # you want. It starts at 0 so if you 4 cores,
 # enter 0-3
-#SBATCH --array=0-2
+#SBATCH --array=0-0
 #SBATCH -o %a.out
 #SBATCH -e %a.err
 

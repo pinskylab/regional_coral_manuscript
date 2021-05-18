@@ -2,7 +2,7 @@
 import numpy as np
 
 # Choose the number of iterations
-iterations = 3 #number of iterations per scenario
+iterations = 1 #number of iterations per scenario
 
 #! Load the temperature files
 #! FIJI
@@ -12,8 +12,8 @@ iterations = 3 #number of iterations per scenario
 #SST_Fiji_85_sim = np.load("./Fiji/input/Fiji_SST_85_yearly_sim.npy")
 
 #! CARIBBEAN
-SST_Caribbean_45_obs = np.load("./Caribbean/input/Caribbean_sst45_yearly_GISS.npy")
-SST_Caribbean_85_obs = np.load("./Caribbean/input/Caribbean_sst85_yearly_GISS.npy")
+SST_Caribbean_45_obs = np.load("./Caribbean/input/Caribbean_SST_45_yearly_obs.npy")
+SST_Caribbean_85_obs = np.load("./Caribbean/input/Caribbean_SST_85_yearly_obs.npy")
 #SST_Caribbean_45_sim = np.load("./Caribbean/input/Caribbean_SST_45_yearly_sim.npy")
 #SST_Caribbean_85_sim = np.load("./Caribbean/input/Caribbean_SST_85_yearly_sim.npy")
 
@@ -43,20 +43,21 @@ bw_centrality_sorted = np.load("./Caribbean/input/Caribbean_bet_central_sorted.n
 egvec_centrality_sorted = np.load("./Caribbean/input/Caribbean_egvec_centrality_sorted.npy")
 even_space = np.load("./Caribbean/input/Caribbean_even_space.npy")
 
+
 #! Other parameters
-nsp = 3 # Number of species in model
-species_type = np.array([[1,1,2]]) # Species type ID
-species = ["C1","C2","M1"] # Species labels
-r_max = np.array([[1.5,1.5,1.]])
-w = np.array([[1,3,1.5]])
-alphas = np.array([[1.,1.3,1.3],[1.,1.,1.3],[1.,1.,1.]]) 
+nsp = 2 # Number of species in model
+species_type = np.array([[1,1]]) # Species type ID
+species = ["C1","C2"] # Species labels
+r_max = np.array([[1.5,1.5]])
+w = np.array([[1,3]])
+alphas = np.array([[5.77,0.9],[0.9,5.77]]) 
 mortality_model = "temp_vary"
 m_const = 0.1
 
 #! Change these values
-V = np.array([[0.01,0.01,0.01]]) # V = 0., 0.01, 0.1
-beta = np.array([[0.05,0.05,0.05]]) #beta = 0, 0.05, 0.1
-region = "Caribbean"
+V = np.array([[0.0,0.0]]) # V = 0., 0.01, 0.1
+beta = np.array([[0.5,0.5]]) #beta = 0, 0.05, 0.1
+region = "Caribbean5.77_0.9_0.9_5.77"
 SST_45 = SST_Caribbean_45_obs
 SST_85 = SST_Caribbean_85_obs
 hindcast_label = "H"
@@ -65,10 +66,10 @@ temp_scenario2 = "85"
 D = D_Caribbean.T
 hindcast_length = 149
 areas = areas_Caribbean
-algmort_min = 0.1
-algmort_max = 0.1
-# Strategy options: none, hot, cold, hotcold, space, highcoral, lowcoral, random, egvec_cent, bw_cent, even_space
-reserve_strategy = "random" 
-reserve_fraction = 0.9
+algmort_min = 1.0
+algmort_max = 1.0
+# Strategy options: none, hot, cold, hotcold, space, highcoral, lowcoral, random
+reserve_strategy = "none" 
+reserve_fraction = 0.0
 # Change this to True if setting the MPA strategy only for the subregion
 subregion_flag = False

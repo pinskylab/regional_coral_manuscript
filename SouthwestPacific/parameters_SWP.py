@@ -2,7 +2,7 @@
 import numpy as np
 
 # Choose the number of iterations
-iterations = 3 #number of iterations per scenario
+iterations = 1 #number of iterations per scenario
 
 #! Load the temperature files
 #! SWP
@@ -50,18 +50,18 @@ egvec_centrality_sorted = np.load("./SWP/input/SWP_egvec_centrality_sorted.npy")
 even_space = np.load("./SWP/input/SWP_even_space.npy")
 
 #! Other parameters
-nsp = 3 # Number of species in model
-species_type = np.array([[1,1,2]]) # Species type ID
-species = ["C1","C2","M1"] # Species labels
-r_max = np.array([[1.5,1.5,1.]])
-w = np.array([[1.,3.,1.5]])
-alphas = np.array([[1.,1.3,1.3],[1.,1.,1.3],[1.,1.,1.]]) 
+nsp = 2 # Number of species in model
+species_type = np.array([[1,1]]) # Species type ID
+species = ["C1","C2"] # Species labels
+r_max = np.array([[1.5,1.5]])
+w = np.array([[1.,3.]])
+alphas = np.array([[5.77,0.9],[0.9,5.77]]) 
 mortality_model = "temp_vary"
 m_const = 0.1
 
 #! Change these values
-V = np.array([[0.01,0.01,0.01]]) # V = 0., 0.01, 0.1
-beta = np.array([[0.05,0.05,0.05]]) #beta = 0, 0.01, 0.1
+V = np.array([[0.0,0.0]]) # V = 0., 0.01, 0.1
+beta = np.array([[0.0,0.0]]) #beta = 0, 0.05, 0.5
 region = "SWP"
 SST_45 = SST_SWP_45
 SST_85 = SST_SWP_85
@@ -71,10 +71,10 @@ temp_scenario2 = "85"
 D = D_SWP.T
 hindcast_length = 149
 areas = areas_SWP
-algmort_min = 0.1
-algmort_max = 0.1
+algmort_min = 1.0
+algmort_max = 1.0
 # Strategy options: none, hot, cold, hotcold, space, highcoral, lowcoral, random, egvec_cent, bw_cent, even_space
-reserve_strategy = "even_space" 
-reserve_fraction = 0.3
+reserve_strategy = "none" 
+reserve_fraction = 0.0
 # Change this to True if setting the MPA strategy only for the subregion
 subregion_flag = False

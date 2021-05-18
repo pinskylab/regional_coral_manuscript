@@ -8,7 +8,7 @@ import time
 import random
 
 #! The following two lines are different among regions:
-from functions_nominstep import *
+from functions_deterministic import *
 import parameters_caribbean as P
 
 #! This function submits multiple "sub_jobs" to the cluster:
@@ -57,41 +57,41 @@ if __name__ == '__main__':
         #N_0, Z_0, YEAR_0 = run_hindcast(P)
         
         (np.save("./output/N_hindcast_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.hindcast_label +"_"+ str(seed) + ".npy", N_0))
                 
         (np.save("./output/Z_hindcast_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.hindcast_label +"_"+ str(seed) + ".npy", Z_0))        
        
         (np.save("./output/year_hindcast_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.hindcast_label +"_"+ str(seed) + ".npy", YEAR_0))   
 
         (np.save("./output/N_forecast1_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.temp_scenario1 +"_"+ str(seed) + ".npy", N_1))
                 
         (np.save("./output/Z_forecast1_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.temp_scenario1 +"_"+ str(seed) + ".npy", Z_1))        
                 
         (np.save("./output/year_forecast1_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.temp_scenario1 +"_"+ str(seed) + ".npy", YEAR_1)) 
 
         (np.save("./output/N_forecast2_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.temp_scenario2 +"_"+ str(seed) + ".npy", N_2))
                 
         (np.save("./output/Z_forecast2_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.temp_scenario2 +"_"+ str(seed) + ".npy", Z_2)) 
 
         (np.save("./output/year_forecast2_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
                 P.temp_scenario2 +"_"+ str(seed) + ".npy", YEAR_2))                       
         
         (np.save("./output/mpa_status_"+ P.region +"_beta_"+ str(P.beta[0,0]) +"_V_"+ str(P.V[0,0]) +
-                "_mpa_"+str(P.reserve_strategy)+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
-                P.temp_scenario1 +"_"+ P.temp_scenario2 +"_"+ str(seed) + ".npy", mpa_status)) 
+                "_mpa_"+ str(P.reserve_fraction) +"_algmax_"+ str(P.algmort_max) +"_"+ 
+                P.temp_scenario1 +"_"+ P.temp_scenario2 +"_"+ str(seed) + ".npy", mpa_status))
