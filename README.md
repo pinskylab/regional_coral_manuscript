@@ -5,7 +5,7 @@ This repository contains simulated data and associated code for the manuscript '
 **Authors:**   
 Lisa C. McManus<sup>1,2*</sup>, Daniel L. Forrest<sup>1*</sup>, Edward W. Tekwa<sup>1</sup>, Daniel E. Schindler<sup>3</sup>, Madhavi A. Colton<sup>4</sup>, Michael M. Webster<sup>5</sup>, Timothy E. Essington<sup>3</sup>, Stephen R. Palumbi<sup>6</sup>, Peter J. Mumby<sup>7</sup> and Malin L. Pinsky<sup>1</sup>
 
-* Lisa C. McManus and Daniel L. Forrest should be considered joint first author.
+\* Lisa C. McManus and Daniel L. Forrest should be considered joint first author.
 
 **Affiliations:**  
 <sup>1</sup>Department of Ecology, Evolution, and Natural Resources, Rutgers University, New Brunswick, NJ, USA.  
