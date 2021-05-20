@@ -8,10 +8,10 @@ Lisa C. McManus<sup>1,2*</sup>, Daniel L. Forrest<sup>1*</sup>, Edward W. Tekwa<
 \* Lisa C. McManus and Daniel L. Forrest should be considered joint first author.
 
 **Affiliations:**  
-<sup>1</sup>Department of Ecology, Evolution, and Natural Resources, Rutgers University, New Brunswick, NJ, USA.  
-<sup>2</sup>Hawaiʻi Institute of Marine Biology, University of Hawaiʻi at Manoa, Kaneʻohe, HI 96744, USA. 
-<sup>3</sup>School of Aquatic and Fishery Sciences, University of Washington, Seattle, WA, USA.  
-<sup>4</sup>Coral Reef Alliance, Oakland, CA, USA.  
+<sup>1</sup>Department of Ecology, Evolution, and Natural Resources, Rutgers University, New Brunswick, NJ, USA. </br> 
+<sup>2</sup>Hawaiʻi Institute of Marine Biology, University of Hawaiʻi at Manoa, Kaneʻohe, HI 96744, USA. </br>
+<sup>3</sup>School of Aquatic and Fishery Sciences, University of Washington, Seattle, WA, USA.  </br>
+<sup>4</sup>Coral Reef Alliance, Oakland, CA, USA.  </br>
 <sup>5</sup>Department of Environmental Studies, New York University, 285 Mercer St., New York, NY 10003, USA. </br>
 <sup>6</sup>Department of Biology, Hopkins Marine Station, Stanford University, Pacific Grove, CA, USA. </br>
 <sup>7</sup>Marine Spatial Ecology Laboratory, School of Biological Sciences, The University of Queensland, St Lucia, Queensland, Australia.  
