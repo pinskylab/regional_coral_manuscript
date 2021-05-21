@@ -28,6 +28,12 @@ Scripts for each region are in their respective directories within the /simulati
 5. /input directory: includes sea surface temperature, lats and lons, connectivity matrix
 
 **II. Statistical Analyses**  
+Input files for this section are loaded from /Output.
+
+1. /Python/Dataframes_for_models.ipynb: Construct Python dataframes and convert .npy to .csv for statistical analyses in R.  These are saved to /R/python_to_R_csv
+2. /R/Regional_coral_stats.Rmd: Generates the stats model outputs (GLM) that are saved into /R/output/
+
+
 Simulation outputs (.npy) were converted to .csv for statistical analyses in R. 
 
 **III. Figures**  
