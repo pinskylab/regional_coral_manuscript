@@ -1,0 +1,109 @@
+﻿Region,Variable,V,Value
+Caribbean,△SST,0,-0.1133
+Caribbean,Ranked Temperature,0,-0.6843
+Caribbean,Local Retention,0,-0.1448
+Caribbean,Self-recruitment,0,-0.04693
+Caribbean,Destination Strength,0,0.488
+Caribbean,Betweenness Centrality,0,
+Caribbean,Eigenvector Centrality,0,-0.3654
+Caribbean,Initial Trait Mismatch,0,0.6769
+Caribbean,Area,0,0.02508
+Caribbean,DS:ITM,0,-0.124
+Caribbean,rankSST:SR,0,0.1169
+Caribbean,Area:DS,0,-0.05244
+SWP,△SST,0,-0.4336
+SWP,Ranked Temperature,0,-0.7428
+SWP,Local Retention,0,
+SWP,Self-recruitment,0,0.1114
+SWP,Destination Strength,0,0.2348
+SWP,Betweenness Centrality,0,0.03413
+SWP,Eigenvector Centrality,0,0.09051
+SWP,Initial Trait Mismatch,0,0.2348
+SWP,Area,0,0.1034
+SWP,DS:ITM,0,0.02049
+SWP,rankSST:SR,0,0.2268
+SWP,Area:DS,0,-0.02142
+CT,△SST,0,0.1415
+CT,Ranked Temperature,0,-0.6852
+CT,Local Retention,0,-0.09641
+CT,Self-recruitment,0,0.00676
+CT,Destination Strength,0,0.3334
+CT,Betweenness Centrality,0,0.0339
+CT,Eigenvector Centrality,0,0.06723
+CT,Initial Trait Mismatch,0,-0.1092
+CT,Area,0,-0.9506
+CT,DS:ITM,0,-0.05347
+CT,rankSST:SR,0,0.02473
+CT,Area:DS,0,0.1631
+Caribbean,△SST,0.01,-0.07372
+Caribbean,Ranked Temperature,0.01,-0.07489
+Caribbean,Local Retention,0.01,-0.05534
+Caribbean,Self-recruitment,0.01,-0.1306
+Caribbean,Destination Strength,0.01,0.1482
+Caribbean,Betweenness Centrality,0.01,
+Caribbean,Eigenvector Centrality,0.01,-0.1134
+Caribbean,Initial Trait Mismatch,0.01,0.2618
+Caribbean,Area,0.01,0.05328
+Caribbean,DS:ITM,0.01,-0.03426
+Caribbean,rankSST:SR,0.01,0.0636
+Caribbean,Area:DS,0.01,-0.04104
+SWP,△SST,0.01,-0.28
+SWP,Ranked Temperature,0.01,-0.1932
+SWP,Local Retention,0.01,
+SWP,Self-recruitment,0.01,0.0117
+SWP,Destination Strength,0.01,0.141
+SWP,Betweenness Centrality,0.01,
+SWP,Eigenvector Centrality,0.01,
+SWP,Initial Trait Mismatch,0.01,0.1901
+SWP,Area,0.01,0.05075
+SWP,DS:ITM,0.01,0.02352
+SWP,rankSST:SR,0.01,0.07935
+SWP,Area:DS,0.01,-0.01225
+CT,△SST,0.01,0.07327
+CT,Ranked Temperature,0.01,-0.34378
+CT,Local Retention,0.01,-0.08464
+CT,Self-recruitment,0.01,-0.01507
+CT,Destination Strength,0.01,0.22159
+CT,Betweenness Centrality,0.01,0.03498
+CT,Eigenvector Centrality,0.01,0.01184
+CT,Initial Trait Mismatch,0.01,-0.05418
+CT,Area,0.01,-0.5483
+CT,DS:ITM,0.01,-0.02783
+CT,rankSST:SR,0.01,0.01752
+CT,Area:DS,0.01,0.02501
+Caribbean,△SST,0.1,
+Caribbean,Ranked Temperature,0.1,
+Caribbean,Local Retention,0.1,
+Caribbean,Self-recruitment,0.1,
+Caribbean,Destination Strength,0.1,0.136
+Caribbean,Betweenness Centrality,0.1,
+Caribbean,Eigenvector Centrality,0.1,0.01875
+Caribbean,Initial Trait Mismatch,0.1,0.03831
+Caribbean,Area,0.1,-0.002409
+Caribbean,DS:ITM,0.1,
+Caribbean,rankSST:SR,0.1,
+Caribbean,Area:DS,0.1,-0.02831
+SWP,△SST,0.1,-0.05432
+SWP,Ranked Temperature,0.1,-0.01068
+SWP,Local Retention,0.1,
+SWP,Self-recruitment,0.1,0.01687
+SWP,Destination Strength,0.1,0.06468
+SWP,Betweenness Centrality,0.1,
+SWP,Eigenvector Centrality,0.1,0.01577
+SWP,Initial Trait Mismatch,0.1,0.08353
+SWP,Area,0.1,
+SWP,DS:ITM,0.1,
+SWP,rankSST:SR,0.1,0.02415
+SWP,Area:DS,0.1,
+CT,△SST,0.1,-0.01768
+CT,Ranked Temperature,0.1,-0.05656
+CT,Local Retention,0.1,-0.03725
+CT,Self-recruitment,0.1,
+CT,Destination Strength,0.1,0.1191
+CT,Betweenness Centrality,0.1,0.01555
+CT,Eigenvector Centrality,0.1,
+CT,Initial Trait Mismatch,0.1,-0.01303
+CT,Area,0.1,-0.1847
+CT,DS:ITM,0.1,
+CT,rankSST:SR,0.1,
+CT,Area:DS,0.1,0.01092

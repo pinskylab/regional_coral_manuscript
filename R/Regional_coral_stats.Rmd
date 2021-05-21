@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r}
 library(MuMIn)
+library(plyr)
 
 table_gen <- function(beta = '05' , V = '001', RCP ='45', region = 'CT' ){
   if (region == 'Caribbean'){
