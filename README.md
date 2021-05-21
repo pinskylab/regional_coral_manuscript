@@ -19,6 +19,14 @@ Lisa C. McManus<sup>1,2*</sup>, Daniel L. Forrest<sup>1*</sup>, Edward W. Tekwa<
 **I. Simulations**  
 We have included the Python scripts used for calculating numerical solutions on a high-performance computing system. Note that you may need to modify the syntax and install packages depending on the particular HPC that you are using. These data were generated on the <a href='https://oarc.rutgers.edu/resources/amarel/'>Rutgers Amarel cluster</a>.
 
+Scripts for each region are in their respective directories: 'Caribbean,' 'CoralTriangle' and 'SouthwestPacific.' The following text will describe files in /Caribbean but will apply for the analogous files in /CoralTriangle and /Southwest Pacific.
+
+1. functions_deterministic.py: contains all functions called in the numerical solver
+2. parameters_caribbean.py: sets or loads all parameters
+3. routine_caribbean.py: the actual routine to run simulations (produces data)
+4. submit_caribbean.sh: file to submit 'routine_caribbean.py' to the HPC
+5. \input directory: includes sea surface temperature, lats and lons, connectivity matrix
+
 **II. Statistical Analyses**  
 Simulation outputs (.npy) were converted to .csv for statistical analyses in R. 
 
