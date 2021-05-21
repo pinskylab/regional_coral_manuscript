@@ -1,0 +1,630 @@
+---
+title: "Regional_coral_stats"
+author: "Daniel Forrest"
+date: "6/1/2020"
+output: html_document
+---
+```{r}
+library(MuMIn)
+
+table_gen <- function(beta = '05' , V = '001', RCP ='45', region = 'CT' ){
+  if (region == 'Caribbean'){
+    df <- read.csv(paste0("./python_to_R_csv/df_Carib",RCP,"_b",beta,"_v",V,".csv"), sep =",")
+  }
+    else if (region == 'SWP'){
+    df <- read.csv(paste0("./python_to_R_csv/df_SWP",RCP,"_b",beta,"_v",V,".csv"), sep =",")
+    }
+    else if (region == 'CT'){
+    df  <- read.csv(paste0("./python_to_R_csv/df_CT",RCP,"_b",beta,"_v",V,".csv"), sep =",")
+    }
+  df$DS_log <- log10(df$DS + 0.0001)
+  df$Area_log <- log10(df$Area + 0.0001)
+  df$ITM_log <- sign(df$ITM)*log10(abs(df$ITM) + 1)
+  df$LR_log <- log10(df$LR + 0.0001)
+  df$SR_log <- log10(df$SR + 0.0001)
+  df$bwcent_log <- log10(df$bw_cent + 0.0001)
+  df$egveccent_log <- log10(df$egvec_cent + 0.0001)
+  df$pr05_log <- log10(df$pr05 + 0.0001)
+  dfs <- data.frame(scale(df[c(-1, -12:-13)], scale = TRUE, center = TRUE))
+  dfs[,19:20] <- df[,12:13]
+  dfs[is.na(dfs)] <- 0
+  
+  # full model
+  model <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST+LR_log+SR_log+DS_log+ITM_log+pr05_log+Area_log+pr05_log,family= binomial, data = dfs, na.action = "na.fail")
+  dredgemodel <- dredge(model, extra = "R^2")
+  bestnames <- names(as.data.frame(coef(dredgemodel[1])))[-1]
+  list <- c()
+  for (i in 1:length(bestnames)){
+    newelem <- bestnames[i]
+    list <- c(list,newelem)
+  }
+  bestform <- as.formula(paste("cbind(I(round(min_cover*100)), 100) ~",paste(list, collapse = '+'),sep = ""))
+  
+  model_best <- glm(bestform,family= binomial, data = dfs, na.action = "na.fail")
+  model_larv <- glm(cbind(I(round(min_cover*100)), 100) ~ DS_log+pr05_log,family= binomial, data = dfs, na.action = "na.fail")
+  model_temp <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST,family= binomial, data = dfs, na.action = "na.fail")
+  model_conn <- glm(cbind(I(round(min_cover*100)), 100) ~ LR_log+SR_log+DS_log,family= binomial, data = dfs, na.action = "na.fail")
+  
+  full_model <- coef(model)
+  rvi <- importance(dredgemodel)
+  rvi <-rvi[order(match(names(rvi),names(full_model)))]
+  best_model <- as.data.frame(coef(dredgemodel[1]))
+  best_model <-best_model[order(match(names(best_model),names(full_model)))]
+  temp_model <- subset(dredgemodel, has(iSST,deltaSST, !DS_log, !ITM_log, !Area_log, !LR_log, !SR_log, !pr05_log), recalc.weights = FALSE)# temp vars only
+  conn_model <-subset(dredgemodel, has(LR_log, SR_log, DS_log, !iSST,!deltaSST, !ITM_log, !Area_log, !pr05_log), recalc.weights = FALSE) # conn. vars only
+  larv_model <- subset(dredgemodel, has(!iSST,DS_log,!ITM_log, !deltaSST, !Area_log,!LR_log, !SR_log, pr05_log), recalc.weights = FALSE)# Ideal larvae only
+  coef_temp <- coef(model_temp)
+  coef_conn <- coef(model_conn)
+  coef_larv <- coef(model_larv)
+  r2_best <- dredgemodel[1,10]
+  delta_best <- dredgemodel[1,14]
+  weight_best <- dredgemodel[1,15]
+  r2_full <- dredgemodel[complete.cases(dredgemodel),10]
+  delta_full <- dredgemodel[complete.cases(dredgemodel),14]
+  weight_full <- dredgemodel[complete.cases(dredgemodel),15]
+  r2_temp <- temp_model[1,10]
+  delta_temp <- temp_model[1,14]
+  weight_temp <- temp_model[1,15]
+  r2_conn <-conn_model[1,10]
+  delta_conn <- conn_model[1,14]
+  weight_conn <- conn_model[1,15]
+  r2_larv <- larv_model[1,10]
+  delta_larv <- larv_model[1,14]
+  weight_larv <- larv_model[1,15]
+  
+  temp_model <- as.data.frame(temp_model[,-c(14:19)])
+  temp_model <-temp_model[order(match(names(temp_model),names(full_model)))]
+  conn_model <- as.data.frame(conn_model[,-c(14:19)])
+  conn_model <-conn_model[order(match(names(conn_model),names(full_model)))]
+  larv_model <- as.data.frame(larv_model[,-c(14:19)])
+  larv_model <-larv_model[order(match(names(larv_model),names(full_model)))]
+  
+  sd_best <- summary(model_best)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_full <- summary(model)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_temp <- summary(model_temp)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_conn <- summary(model_conn)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_larv <- summary(model_larv)$coefficients[, 2]*sqrt(nrow(dfs))
+
+  # best_model <- paste0(best_model, " (", sd_best,")")
+  # full_model <- paste0(full_model, " (", sd_full,")")
+  # temp_model <- paste0(temp_model, " (", sd_temp,")")
+  # conn_model <- paste0(conn_model, " (", sd_conn,")")
+  # larv_model <- paste0(larv_model, " (", sd_larv,")")
+
+   myList <-list(as.data.frame(t(rvi)),as.data.frame(t(full_model[-1])),as.data.frame(t(sd_full[-1])),as.data.frame(best_model[-1]),as.data.frame(t(sd_best[-1])),as.data.frame(larv_model[-1]),as.data.frame(t(sd_larv[-1])),as.data.frame(conn_model[-1]),as.data.frame(t(sd_conn[-1])), as.data.frame(temp_model[-1]),as.data.frame(t(sd_temp[-1])))
+  coef_ <- t(rbind.fill(myList)) #bind all coefficients
+  stats_data <- as.data.frame(coef_[-c(9:13),])
+  
+    # create row of deltaAIC
+  deltas <- cbind(NA, delta_full,NA,delta_best,NA, delta_larv,NA, delta_conn,NA,delta_temp, NA)
+  # create row of r^2
+  r2 <- cbind(NA, r2_full,NA, r2_best, NA,r2_larv,NA, r2_conn,NA, r2_temp,NA)
+  # create row of weight
+  weights <- cbind(NA, weight_full,NA,weight_best, NA, weight_larv,NA, weight_conn, NA, weight_temp, NA)
+  model_stats <- as.data.frame(rbind(deltas,r2,weights)) #bind deltas, r2, weights
+  names <- c("RVI","Full","Full SD", "Best","Best SD","Warm Larvae","Warm Larvae SD", "Connectivity","Connectivity SD", "Temperature","Temperature SD") #column names
+  rnames <- c("△AIC", bquote(r^2), "Akaike Weight") #missing row names
+  names(model_stats) <- names
+  rownames(model_stats) <- rnames
+  names(stats_data) <- names
+  stats_data <- rbind(stats_data,model_stats) #add stats rows to coefficients table
+  stats_data <- signif(stats_data, 2)
+  # stats_data$Full <-paste0(stats_data$Full, " (", stats_data$`Full SD`,")") 
+  # stats_data$Best <-paste0(stats_data$Best, " (", stats_data$`Best SD`,")")
+  # stats_data$`Warm Larvae` <-paste0(stats_data$`Warm Larvae`, " (", stats_data$`Warm Larvae SD`,")")
+  # stats_data$Connectivity <-paste0(stats_data$Connectivity, " (", stats_data$`Connectivity SD`,")")
+  # stats_data$Temperature <-paste0(stats_data$Temperature, " (", stats_data$`Temperature SD`,")")
+  
+}
+```
+```{r}
+#Across all V, Beta = 0.5
+table <- table_gen(beta = '05' , V = '001', RCP ='45', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib_V0.01.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='45', region = 'SWP')
+write.csv(table,'model_summary_table_swp_V0.01.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='45', region = 'CT')
+write.csv(table,'model_summary_table_ct_V0.01.csv')
+table <- table_gen(beta = '05' , V = '01', RCP ='45', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib_V0.1.csv')
+table <- table_gen(beta = '05' , V = '01', RCP ='45', region = 'SWP')
+write.csv(table,'model_summary_table_swp_V0.1.csv')
+table <- table_gen(beta = '05' , V = '01', RCP ='45', region = 'CT')
+write.csv(table,'model_summary_table_ct_V0.1.csv')
+table <- table_gen(beta = '05' , V = '0', RCP ='45', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib_V0.csv')
+table <- table_gen(beta = '05' , V = '0', RCP ='45', region = 'SWP')
+write.csv(table,'model_summary_table_swp_V0.csv')
+table <- table_gen(beta = '05' , V = '0', RCP ='45', region = 'CT')
+write.csv(table,'model_summary_table_ct_V0.csv')
+```
+
+```{r}
+
+carib_v0 <- read.csv(paste0('model_summary_table_carib_V0.csv'))
+carib_v0.01 <- read.csv('model_summary_table_carib_V0.01.csv')
+carib_v0.1 <- read.csv('model_summary_table_carib_V0.1.csv')
+carib_v0.01['Region'] <- 'Carib'
+carib_v0['Region'] <- 'Carib'
+carib_v0.1['Region'] <- 'Carib'
+carib_v0['V'] <- 0
+carib_v0.01['V'] <- 0.01
+carib_v0.1['V'] <- 0.1
+carib_v0['V2'] <- 0
+carib_v0.01['V2'] <- 1
+carib_v0.1['V2'] <- 2
+
+
+swp_v0 <- read.csv('model_summary_table_swp_V0.csv')
+swp_v0.01 <- read.csv('model_summary_table_swp_V0.01.csv')
+swp_v0.1 <- read.csv('model_summary_table_swp_V0.1.csv')
+swp_v0.01['Region'] <- 'SWP'
+swp_v0['Region'] <- 'SWP'
+swp_v0.1['Region'] <- 'SWP'
+swp_v0['V'] <- 0
+swp_v0.01['V'] <- 0.01
+swp_v0.1['V'] <- 0.1
+swp_v0['V2'] <- 0
+swp_v0.01['V2'] <- 1
+swp_v0.1['V2'] <- 2
+
+ct_v0 <- read.csv('model_summary_table_ct_V0.csv')
+ct_v0.01 <- read.csv('model_summary_table_ct_V0.01.csv')
+ct_v0.1 <- read.csv('model_summary_table_ct_V0.1.csv')
+ct_v0.01['Region'] <- 'CT'
+ct_v0['Region'] <- 'CT'
+ct_v0.1['Region'] <- 'CT'
+ct_v0['V'] <- 0
+ct_v0.01['V'] <- 0.01
+ct_v0.1['V'] <- 0.1
+ct_v0['V2'] <- 0
+ct_v0.01['V2'] <- 1
+ct_v0.1['V2'] <- 2
+
+all_data <- rbind(carib_v0[-c(9:11),],carib_v0.01[-c(9:11),],carib_v0.1[-c(9:11),], swp_v0[-c(9:11),],swp_v0.01[-c(9:11),],swp_v0.1[-c(9:11),], ct_v0[-c(9:11),], ct_v0.01[-c(9:11),], ct_v0.1[-c(9:11),])
+names(all_data)[names(all_data) == "X"] <- "Variable"
+
+write.csv(all_data,'model_summary_table_allregions.csv')
+```
+
+```{r}
+#Across all Beta, V = 0.01
+table <- table_gen(beta = '0' , V = '001', RCP ='45', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib_B0V001.csv')
+table <- table_gen(beta = '0' , V = '001', RCP ='45', region = 'SWP')
+write.csv(table,'model_summary_table_swp_B0V001.csv')
+table <- table_gen(beta = '0' , V = '001', RCP ='45', region = 'CT')
+write.csv(table,'model_summary_table_ct_B0V001.csv')
+table <- table_gen(beta = '005' , V = '001', RCP ='45', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib_B005V001.csv')
+table <- table_gen(beta = '005' , V = '001', RCP ='45', region = 'SWP')
+write.csv(table,'model_summary_table_swp_B005V001.csv')
+table <- table_gen(beta = '005' , V = '001', RCP ='45', region = 'CT')
+write.csv(table,'model_summary_table_ct_B005V001.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='45', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib_B05V001.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='45', region = 'SWP')
+write.csv(table,'model_summary_table_swp_B05V001.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='45', region = 'CT')
+write.csv(table,'model_summary_table_ct_B05V001.csv')
+```
+```{r}
+carib_B0 <- read.csv('model_summary_table_carib_B0V001.csv')
+carib_B0.05 <- read.csv('model_summary_table_carib_B005V001.csv')
+carib_B0.5 <- read.csv('model_summary_table_carib_B05V001.csv')
+carib_B0['Region'] <- 'Carib'
+carib_B0.05['Region'] <- 'Carib'
+carib_B0.5['Region'] <- 'Carib'
+carib_B0['Beta'] <- 0
+carib_B0.05['Beta'] <- 0.05
+carib_B0.5['Beta'] <- 0.5
+carib_B0['Beta2'] <- 0
+carib_B0.05['Beta2'] <- 1
+carib_B0.5['Beta2'] <- 2
+
+
+swp_B0 <- read.csv('model_summary_table_swp_B0V001.csv')
+swp_B0.05 <- read.csv('model_summary_table_swp_B005V001.csv')
+swp_B0.5 <- read.csv('model_summary_table_swp_B05V001.csv')
+swp_B0['Region'] <- 'SWP'
+swp_B0.05['Region'] <- 'SWP'
+swp_B0.5['Region'] <- 'SWP'
+swp_B0['Beta'] <- 0
+swp_B0.05['Beta'] <- 0.05
+swp_B0.5['Beta'] <- 0.5
+swp_B0['Beta2'] <- 0
+swp_B0.05['Beta2'] <- 1
+swp_B0.5['Beta2'] <- 2
+
+ct_B0 <- read.csv('model_summary_table_ct_B0V001.csv')
+ct_B0.05 <- read.csv('model_summary_table_ct_B005V001.csv')
+ct_B0.5 <- read.csv('model_summary_table_ct_B05V001.csv')
+ct_B0['Region'] <- 'CT'
+ct_B0.05['Region'] <- 'CT'
+ct_B0.5['Region'] <- 'CT'
+ct_B0['Beta'] <- 0
+ct_B0.05['Beta'] <- 0.05
+ct_B0.5['Beta'] <- 0.5
+ct_B0['Beta2'] <- 0
+ct_B0.05['Beta2'] <- 1
+ct_B0.5['Beta2'] <- 2
+
+all_data <- rbind(carib_B0[-c(9:11),],carib_B0.05[-c(9:11),],carib_B0.5[-c(9:11),], swp_B0[-c(9:11),],swp_B0.05[-c(9:11),],swp_B0.5[-c(9:11),], ct_B0[-c(9:11),], ct_B0.05[-c(9:11),], ct_B0.5[-c(9:11),])
+names(all_data)[names(all_data) == "X"] <- "Variable"
+
+write.csv(all_data,'model_summary_table_allregions_beta.csv')
+```
+
+```{r}
+#RCP8.5, Across all V, Beta = 0.5
+table <- table_gen(beta = '05' , V = '001', RCP ='85', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib85_V0.01.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='85', region = 'SWP')
+write.csv(table,'model_summary_table_swp85_V0.01.csv')
+table <- table_gen(beta = '05' , V = '001', RCP ='85', region = 'CT')
+write.csv(table,'model_summary_table_ct85_V0.01.csv')
+table <- table_gen(beta = '05' , V = '01', RCP ='85', region = 'Caribbean')
+write.csv(table,'model_summary_table_carib85_V0.1.csv')
+table <- table_gen(beta = '05' , V = '01', RCP ='85', region = 'SWP')
+write.csv(table,'model_summary_table_swp85_V0.1.csv')
+table <- table_gen(beta = '05' , V = '01', RCP ='85', region = 'CT')
+write.csv(table,'model_summary_table_ct85_V0.1.csv')
+#table <- table_gen(beta = '05' , V = '0', RCP ='85', region = 'Caribbean') # model does not converge, table filled with NAs
+#write.csv(table,'model_summary_table_carib85_V0.csv')
+table <- table_gen(beta = '05' , V = '0', RCP ='85', region = 'SWP')
+write.csv(table,'model_summary_table_swp85_V0.csv')
+table <- table_gen(beta = '05' , V = '0', RCP ='85', region = 'CT')
+write.csv(table,'model_summary_table_ct85_V0.csv')
+```
+```{r}
+carib85_V0 <- read.csv('model_summary_table_carib85_V0.csv')
+carib85_V0.01 <- read.csv('model_summary_table_carib85_V0.01.csv')
+carib85_V0.1 <- read.csv('model_summary_table_carib85_V0.1.csv')
+carib85_V0.01['Region'] <- 'Carib'
+carib85_V0['Region'] <- 'Carib'
+carib85_V0.1['Region'] <- 'Carib'
+carib85_V0['V'] <- 0
+carib85_V0.01['V'] <- 0.01
+carib85_V0.1['V'] <- 0.1
+carib85_V0['V2'] <- 0
+carib85_V0.01['V2'] <- 1
+carib85_V0.1['V2'] <- 2
+
+
+swp85_V0 <- read.csv('model_summary_table_swp85_V0.csv')
+swp85_V0.01 <- read.csv('model_summary_table_swp85_V0.01.csv')
+swp85_V0.1 <- read.csv('model_summary_table_swp85_V0.1.csv')
+swp85_V0.01['Region'] <- 'SWP'
+swp85_V0['Region'] <- 'SWP'
+swp85_V0.1['Region'] <- 'SWP'
+swp85_V0['V'] <- 0
+swp85_V0.01['V'] <- 0.01
+swp85_V0.1['V'] <- 0.1
+swp85_V0['V2'] <- 0
+swp85_V0.01['V2'] <- 1
+swp85_V0.1['V2'] <- 2
+
+ct85_V0 <- read.csv('model_summary_table_ct85_V0.csv')
+ct85_V0.01 <- read.csv('model_summary_table_ct85_V0.01.csv')
+ct85_V0.1 <- read.csv('model_summary_table_ct85_V0.1.csv')
+ct85_V0.01['Region'] <- 'CT'
+ct85_V0['Region'] <- 'CT'
+ct85_V0.1['Region'] <- 'CT'
+ct85_V0['V'] <- 0
+ct85_V0.01['V'] <- 0.01
+ct85_V0.1['V'] <- 0.1
+ct85_V0['V2'] <- 0
+ct85_V0.01['V2'] <- 1
+ct85_V0.1['V2'] <- 2
+
+all_data <- rbind(carib85_V0[-c(9:12),],carib85_V0.01[-c(9:12),],carib85_V0.1[-c(9:12),], swp85_V0[-c(9:12),],swp85_V0.01[-c(9:12),],swp85_V0.1[-c(9:12),], ct85_V0[-c(9:12),], ct85_V0.01[-c(9:12),], ct85_V0.1[-c(9:12),])
+names(all_data)[names(all_data) == "X"] <- "Variable"
+
+write.csv(all_data,'model_summary_table_allregions85.csv')
+```
+
+
+```{r}
+  df <- read.csv("./python_to_R_csv/df_Carib85_b05_v0.csv")
+  df$DS_log <- log10(df$DS + 0.0001)
+  df$Area_log <- log10(df$Area + 0.0001)
+  df$ITM_log <- sign(df$ITM)*log10(abs(df$ITM) + 1)
+  df$LR_log <- log10(df$LR + 0.0001)
+  df$SR_log <- log10(df$SR + 0.0001)
+  df$bwcent_log <- log10(df$bw_cent + 0.0001)
+  df$egveccent_log <- log10(df$egvec_cent + 0.0001)
+  df$pr05_log <- log10(df$pr05 + 0.0001)
+  dfs <- data.frame(scale(df[c(-1, -12:-13)], scale = TRUE, center = TRUE))
+  dfs[,19:20] <- df[,12:13]
+  dfs[is.na(dfs)] <- 0
+  
+  # full model
+  model <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST+LR_log+SR_log+DS_log+ITM_log+pr05_log+Area_log+pr05_log,family= binomial, data = dfs, na.action = "na.fail")
+  dredgemodel <- dredge(model, extra = "R^2")
+  bestnames <- names(as.data.frame(coef(dredgemodel[1])))[-1]
+  list <- c()
+  for (i in 1:length(bestnames)){
+    newelem <- bestnames[i]
+    list <- c(list,newelem)
+  }
+  bestform <- as.formula(paste("cbind(I(round(min_cover*100)), 100) ~",paste(list, collapse = '+'),sep = ""))
+  
+  model_best <- glm(bestform,family= binomial, data = dfs, na.action = "na.fail")
+  model_larv <- glm(cbind(I(round(min_cover*100)), 100) ~ DS_log+pr05_log,family= binomial, data = dfs, na.action = "na.fail")
+  model_temp <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST,family= binomial, data = dfs, na.action = "na.fail")
+  model_conn <- glm(cbind(I(round(min_cover*100)), 100) ~ LR_log+SR_log+DS_log,family= binomial, data = dfs, na.action = "na.fail")
+  
+  full_model <- coef(model)
+  rvi <- importance(dredgemodel)
+  rvi <-rvi[order(match(names(rvi),names(full_model)))]
+  best_model <- as.data.frame(coef(dredgemodel[1]))
+  best_model <-best_model[order(match(names(best_model),names(full_model)))]
+  temp_model <- subset(dredgemodel, has(iSST,deltaSST, !DS_log, !ITM_log, !Area_log, !LR_log, !SR_log, !pr05_log), recalc.weights = FALSE)# temp vars only
+  conn_model <-subset(dredgemodel, has(LR_log, SR_log, DS_log, !iSST,!deltaSST, !ITM_log, !Area_log, !pr05_log), recalc.weights = FALSE) # conn. vars only
+  larv_model <- subset(dredgemodel, has(!iSST,DS_log,!ITM_log, !deltaSST, !Area_log,!LR_log, !SR_log, pr05_log), recalc.weights = FALSE)# Ideal larvae only
+  coef_temp <- coef(model_temp)
+  coef_conn <- coef(model_conn)
+  coef_larv <- coef(model_larv)
+  r2_best <- dredgemodel[1,10]
+  delta_best <- dredgemodel[1,14]
+  weight_best <- dredgemodel[1,15]
+  r2_full <- dredgemodel[complete.cases(dredgemodel),10]
+  delta_full <- dredgemodel[complete.cases(dredgemodel),14]
+  weight_full <- dredgemodel[complete.cases(dredgemodel),15]
+  r2_temp <- temp_model[1,10]
+  delta_temp <- temp_model[1,14]
+  weight_temp <- temp_model[1,15]
+  r2_conn <-conn_model[1,10]
+  delta_conn <- conn_model[1,14]
+  weight_conn <- conn_model[1,15]
+  r2_larv <- larv_model[1,10]
+  delta_larv <- larv_model[1,14]
+  weight_larv <- larv_model[1,15]
+  
+  temp_model <- as.data.frame(temp_model[,-c(14:19)])
+  temp_model <-temp_model[order(match(names(temp_model),names(full_model)))]
+  conn_model <- as.data.frame(conn_model[,-c(14:19)])
+  conn_model <-conn_model[order(match(names(conn_model),names(full_model)))]
+  larv_model <- as.data.frame(larv_model[,-c(14:19)])
+  larv_model <-larv_model[order(match(names(larv_model),names(full_model)))]
+  
+  sd_best <- summary(model_best)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_full <- summary(model)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_temp <- summary(model_temp)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_conn <- summary(model_conn)$coefficients[, 2]*sqrt(nrow(dfs))
+  sd_larv <- summary(model_larv)$coefficients[, 2]*sqrt(nrow(dfs))
+
+  # best_model <- paste0(best_model, " (", sd_best,")")
+  # full_model <- paste0(full_model, " (", sd_full,")")
+  # temp_model <- paste0(temp_model, " (", sd_temp,")")
+  # conn_model <- paste0(conn_model, " (", sd_conn,")")
+  # larv_model <- paste0(larv_model, " (", sd_larv,")")
+
+   myList <-list(as.data.frame(t(rvi)),as.data.frame(t(full_model[-1])),as.data.frame(t(sd_full[-1])),as.data.frame(best_model[-1]),as.data.frame(t(sd_best[-1])),as.data.frame(larv_model[-1]),as.data.frame(t(sd_larv[-1])),as.data.frame(conn_model[-1]),as.data.frame(t(sd_conn[-1])), as.data.frame(temp_model[-1]),as.data.frame(t(sd_temp[-1])))
+  coef_ <- t(rbind.fill(myList)) #bind all coefficients
+  stats_data <- as.data.frame(coef_[-c(9:13),])
+  
+    # create row of deltaAIC
+  deltas <- cbind(NA, delta_full,NA,delta_best,NA, delta_larv,NA, delta_conn,NA,delta_temp, NA)
+  # create row of r^2
+  r2 <- cbind(NA, r2_full,NA, r2_best, NA,r2_larv,NA, r2_conn,NA, r2_temp,NA)
+  # create row of weight
+  weights <- cbind(NA, weight_full,NA,weight_best, NA, weight_larv,NA, weight_conn, NA, weight_temp, NA)
+  model_stats <- as.data.frame(rbind(deltas,r2,weights)) #bind deltas, r2, weights
+  names <- c("RVI","Full","Full SD", "Best","Best SD","Warm Larvae","Warm Larvae SD", "Connectivity","Connectivity SD", "Temperature","Temperature SD") #column names
+  rnames <- c("△AIC", bquote(r^2), "Akaike Weight") #missing row names
+  names(model_stats) <- names
+  rownames(model_stats) <- rnames
+  names(stats_data) <- names
+  stats_data <- rbind(stats_data,model_stats) #add stats rows to coefficients table
+  stats_data <- signif(stats_data, 2)
+  
+```
+```{r}
+df_Carib2 <- read.csv("./python_to_R_csv/df_Carib45_b05_v001.csv")
+df_SWP2 <- read.csv("./python_to_R_csv/df_SWP45_b05_v001.csv")
+df_CT2 <- read.csv("./python_to_R_csv/df_CT45_b05_v001.csv")
+df_SWP3 <- df_SWP2
+df_SWP3$Area <- df_SWP2$Area*1000000
+df_all2 <- rbind(df_Carib2, df_SWP3, df_CT2)
+```
+```{r}
+#for best residual distribution
+df_Carib2$DS_log <- log10(df_Carib2$DS + 0.0001)
+df_Carib2$Area_log <- log10(df_Carib2$Area + 0.0001)
+df_Carib2$ITM_log <- sign(df_Carib2$ITM)*log10(abs(df_Carib2$ITM) + 1)
+df_Carib2$LR_log <- log10(df_Carib2$LR + 0.0001)
+df_Carib2$SR_log <- log10(df_Carib2$SR + 0.0001)
+df_Carib2$bwcent_log <- log10(df_Carib2$bw_cent + 0.0001)
+df_Carib2$egveccent_log <- log10(df_Carib2$egvec_cent + 0.0001)
+df_Carib2$pr05_log <- log10(df_Carib2$pr05 + 0.0001)
+df_Carib_s<- data.frame(scale(df_Carib2[c(-1, -12:-13)], scale = TRUE, center = TRUE))
+df_Carib_s[,19:20] <- df_Carib2[,12:13]
+df_Carib_s[is.na(df_Carib_s)] <- 0
+
+df_SWP3$DS_log <- log10(df_SWP3$DS + 0.0001)
+df_SWP3$Area_log <- log10(df_SWP3$Area + 0.0001)
+df_SWP3$ITM_log <- sign(df_SWP3$ITM)*log10(abs(df_SWP3$ITM) + 1)
+df_SWP3$LR_log <- log10(df_SWP3$LR + 0.0001)
+df_SWP3$SR_log <- log10(df_SWP3$SR + 0.0001)
+df_SWP3$bwcent_log <- log10(df_SWP3$bw_cent + 0.0001)
+df_SWP3$egveccent_log <- log10(df_SWP3$egvec_cent + 0.0001)
+df_SWP3$pr05_log <- log10(df_SWP3$pr05 + 0.0001)
+df_SWP_s<- data.frame(scale(df_SWP3[c(-1, -12:-13)], scale = TRUE, center = TRUE))
+df_SWP_s[,19:20] <- df_SWP3[,12:13]
+df_SWP_s[is.na(df_SWP_s)] <- 0
+
+df_CT2$DS_log <- log10(df_CT2$DS + 0.0001)
+df_CT2$Area_log <- log10(df_CT2$Area + 0.0001)
+df_CT2$ITM_log <- sign(df_CT2$ITM)*log10(abs(df_CT2$ITM) + 1)
+df_CT2$LR_log <- log10(df_CT2$LR + 0.0001)
+df_CT2$SR_log <- log10(df_CT2$SR + 0.0001)
+df_CT2$bwcent_log <- log10(df_CT2$bw_cent + 0.0001)
+df_CT2$egveccent_log <- log10(df_CT2$egvec_cent + 0.0001)
+df_CT2$pr05_log <- log10(df_CT2$pr05 + 0.0001)
+df_CT_s<- data.frame(scale(df_CT2[c(-1, -12:-13)], scale = TRUE, center = TRUE))
+df_CT_s[,19:20] <- df_CT2[,12:13]
+df_CT_s[is.na(df_CT_s)] <- 0
+```
+```{r}
+Carib_hist <- df_Carib2[c(-1,-12:-13)]
+Carib_hist <- Carib_hist[c(1,2,3,14,4,15,5,11,6,16,7,17,8,13,9,18,10,12)]
+SWP_hist <- df_SWP3[c(-1,-12:-13)]
+SWP_hist <- SWP_hist[c(1,2,3,14,4,15,5,11,6,16,7,17,8,13,9,18,10,12)]
+CT_hist <- df_CT2[c(-1,-12:-13)]
+CT_hist <- CT_hist[c(1,2,3,14,4,15,5,11,6,16,7,17,8,13,9,18,10,12)]
+```
+```{r}
+cor_mat_C <- abs(cor(df_Carib_s[,c(1:10)])) <= 0.5
+cor_mat_C[!lower.tri(cor_mat_C)]<-NA
+cor_mat_C
+
+cor_mat_SWP <- abs(cor(df_SWP_s[,c(1:10)])) <= 0.5
+cor_mat_SWP[!lower.tri(cor_mat_SWP)]<-NA
+cor_mat_SWP
+
+cor_mat_CT <- abs(cor(df_CT_s[,c(1:10)])) <= 0.5
+cor_mat_CT[!lower.tri(cor_mat_CT)]<-NA
+cor_mat_CT
+```
+
+```{r}
+# full model
+model_Carib <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST+LR_log+SR_log+DS_log+ITM_log+Area_log+pr05_log,family= binomial, data = df_Carib_s, na.action = "na.fail")
+model_SWP <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST+LR_log+SR_log+DS_log+ITM_log+Area_log+pr05_log,family= binomial, data = df_SWP_s, na.action = "na.fail")
+model_CT <- glm(cbind(I(round(min_cover*100)), 100) ~ deltaSST+iSST+LR_log+SR_log+DS_log+ITM_log+Area_log+pr05_log,family= binomial, data = df_CT_s, na.action = "na.fail")
+```
+```{R}
+png("params_hist.png", width = 10, height = 16, units = 'in', res = 300)
+par(mfrow = c(8,3))#, mar=c(4,4,2,1))
+hist(df_Carib2$deltaSST,breaks = seq(0,2,by=0.05), xlab="deltaSST", main="Caribbean", col = "purple")
+hist(df_SWP2$deltaSST,breaks = seq(0,2,by=0.05), xlab="deltaSST", main="SWP", col = "maroon3")
+hist(df_CT2$deltaSST,breaks = seq(0,2,by=0.05), xlab="deltaSST", main="CT", col = "orange")
+hist(df_Carib2$iSST,breaks = seq(20,30,by=0.25),xlab="SST",  col = "purple")
+hist(df_SWP2$iSST,breaks = seq(20,30,by=0.25), xlab="SST", col = "maroon3")
+hist(df_CT2$iSST, breaks = seq(20,30,by=0.25),xlab="SST", col = "orange")
+hist(df_Carib2$LR, xlab="Local Retention",breaks = seq(0,1,by=0.025),  col = "purple")
+hist(df_SWP2$LR, xlab="Local Retention",breaks = seq(0,1,by=0.02), col = "maroon3")
+hist(df_CT2$LR, xlab="Local Retention",breaks = seq(0,1,by=0.02), col = "orange")
+hist(df_Carib2$SR, xlab="Self-recruitment",breaks = seq(0,1,by=0.02),  col = "purple")
+hist(df_SWP2$SR, xlab="Self-recruitment",breaks = seq(0,1,by=0.02), col = "maroon3")
+hist(df_CT2$SR, xlab="Self-recruitment",breaks = seq(0,1,by=0.02), col = "orange")
+hist(df_Carib2$DS, breaks = seq(0,2.1,by=0.1),xlab="Destination Strength",  col = "purple")
+hist(df_SWP2$DS, breaks = seq(0,2.1,by=0.1),xlab="Destination Strength", col = "maroon3")
+hist(df_CT2$DS, breaks = seq(0,2.1,by=0.1),xlab="Destination Strength", col = "orange")
+hist(df_Carib2$ITM, breaks = seq(-0.002,0.002,by=0.00005),xlab="Initial Temperature Mismatch",xlim = c(-0.001,0.001), col = "purple")
+hist(df_SWP2$ITM, breaks = seq(-0.002,0.002,by=0.00005),xlab="Initial Temperature Mismatch",xlim = c(-0.001,0.001), col = "maroon3")
+hist(df_CT2$ITM, breaks = seq(-0.23,0.23,by=0.00005),xlab="Initial Temperature Mismatch",xlim = c(-0.001,0.001), col = "orange")
+hist(df_Carib2$pr05,breaks = seq(0,1,by=.05),xlab="pr05",  col = "purple")
+hist(df_SWP3$pr05, breaks = seq(0,1,by=.05), xlab="pr05", col = "maroon3")
+hist(df_CT2$pr05, breaks = seq(0,1,by=.05), xlab="pr05", col = "orange")
+hist(df_Carib2$Area_log,breaks = seq(3.5,10,by=.25),xlab="log(Area)",  col = "purple")
+hist(df_SWP3$Area_log, breaks = seq(3.5,10,by=.25), xlab="log(Area)", col = "maroon3")
+hist(df_CT2$Area_log, breaks = seq(3.5,10,by=.25), xlab="log(Area)", col = "orange")
+#hist(df_Carib2$Area, breaks = seq(0,10000000000,by=62500000),xlab="Area",xlim = c(0,5000000000),  col = "purple")
+#hist(df_SWP3$Area, breaks = seq(0,10000000000,by=62500000), xlab="Area",xlim = c(0,5000000000), col = "maroon3")
+#hist(df_CT2$Area, breaks = seq(0,10000000000,by=62500000), xlab="Area",xlim = c(0,5000000000), col = "orange")
+```
+```{R}
+library(visreg)
+library(ggplot2)
+library(gridExtra)
+library(cowplot)
+
+png("parFX_multipanel.png", width = 6, height = 6, units = 'in', res = 300)
+
+vr_iSST_Carib <- visreg(model_Carib, "iSST", plot = FALSE)
+vr_iSST_SWP<- visreg(model_SWP, "iSST", plot = FALSE)
+vr_iSST_CT <- visreg(model_CT, "iSST", plot = FALSE)
+dplyr::bind_rows(
+  dplyr::mutate(vr_iSST_CT$fit, region = "CT"),
+  dplyr::mutate(vr_iSST_SWP$fit, region = "SWP"),
+  dplyr::mutate(vr_iSST_Carib$fit, region = "Carib")
+) -> fits
+dplyr::bind_rows(
+  dplyr::mutate(vr_iSST_CT$res, region = "CT"),
+  dplyr::mutate(vr_iSST_SWP$res, region = "SWP"),
+  dplyr::mutate(vr_iSST_Carib$res, region = "Carib")
+) -> res
+p1 <-  ggplot(data = fits,aes(x = iSST, y = visregFit, group=region, color = region, fill = region)) +
+  theme_bw() + geom_point(data = res, aes(x = iSST, y = visregRes),show.legend = FALSE, alpha = 0.07, shape = 21, color = "gray")+
+  geom_ribbon(aes(ymin=visregLwr, ymax=visregUpr),show.legend = FALSE,alpha = 0.3, linetype = 0
+  ) + geom_line(size = 0.7, show.legend = FALSE)+ scale_fill_viridis_d(begin = 0.2, end = 0.8, option = "magma") + scale_color_viridis_d(begin = 0.2, end = 0.8, option = "magma")+scale_y_continuous("log odds (minimum cover)")#, limits = c(-10,10))+scale_x_continuous(limits = c(-10,10))
+
+vr_deltaSST_Carib <- visreg(model_Carib, "deltaSST", plot = FALSE)
+vr_deltaSST_SWP<- visreg(model_SWP, "deltaSST", plot = FALSE)
+vr_deltaSST_CT <- visreg(model_CT, "deltaSST", plot = FALSE)
+dplyr::bind_rows(
+  dplyr::mutate(vr_deltaSST_CT$fit, region = "CT"),
+  dplyr::mutate(vr_deltaSST_SWP$fit, region = "SWP"),
+  dplyr::mutate(vr_deltaSST_Carib$fit, region = "Carib")
+) -> fits
+dplyr::bind_rows(
+  dplyr::mutate(vr_deltaSST_CT$res, region = "CT"),
+  dplyr::mutate(vr_deltaSST_SWP$res, region = "SWP"),
+  dplyr::mutate(vr_deltaSST_Carib$res, region = "Carib")
+) -> res
+p2 <- ggplot(data = fits,aes(x = deltaSST, y = visregFit, group=region, color = region, fill = region)) +
+  theme_bw()+ geom_point(data = res, aes(x = deltaSST, y = visregRes),show.legend = FALSE, alpha = 0.07, shape = 21, color = "gray") +
+  geom_ribbon(aes(ymin=visregLwr, ymax=visregUpr),show.legend = FALSE,alpha = 0.3, linetype = 0
+  ) + geom_line(size = 0.7, show.legend = FALSE)+ scale_fill_viridis_d(begin = 0.2, end = 0.8, option = "magma") + scale_color_viridis_d(begin = 0.2, end = 0.8, option = "magma")+scale_y_continuous("log odds (minimum cover)")#, limits = c(-10,10))+scale_x_continuous(limits = c(-10,10))
+
+vr_DS_Carib <- visreg(model_Carib, "DS_log", plot = FALSE)
+vr_DS_SWP<- visreg(model_SWP, "DS_log", plot = FALSE)
+vr_DS_CT <- visreg(model_CT, "DS_log", plot = FALSE)
+dplyr::bind_rows(
+  dplyr::mutate(vr_DS_CT$fit, region = "CT"),
+  dplyr::mutate(vr_DS_SWP$fit, region = "SWP"),
+  dplyr::mutate(vr_DS_Carib$fit, region = "Carib")
+) -> fits
+dplyr::bind_rows(
+  dplyr::mutate(vr_DS_CT$res, region = "CT"),
+  dplyr::mutate(vr_DS_SWP$res, region = "SWP"),
+  dplyr::mutate(vr_DS_Carib$res, region = "Carib")
+) -> res
+p3 <- ggplot(data = fits,aes(x = DS_log, y = visregFit, group=region, color = region, fill = region)) +
+theme_bw() + geom_point(data = res, aes(x = DS_log, y = visregRes),show.legend = FALSE, alpha = 0.07, shape = 21, color = "gray") + geom_ribbon(aes(ymin=visregLwr, ymax=visregUpr),show.legend = FALSE,alpha = 0.3, linetype = 0
+  ) + geom_line(size = 0.7, show.legend = FALSE)+ scale_fill_viridis_d(begin = 0.2, end = 0.8, option = "magma") + scale_color_viridis_d(begin = 0.2, end = 0.8, option = "magma")+scale_y_continuous("log odds (minimum cover)")#, limits = c(-10,10))+scale_x_continuous(limits = c(-10,10))
+
+vr_pr05_Carib <- visreg(model_Carib, "pr05_log", plot = FALSE)
+vr_pr05_SWP<- visreg(model_SWP, "pr05_log", plot = FALSE)
+vr_pr05_CT <- visreg(model_CT, "pr05_log", plot = FALSE)
+dplyr::bind_rows(
+  dplyr::mutate(vr_pr05_CT$fit, region = "CT"),
+  dplyr::mutate(vr_pr05_SWP$fit, region = "SWP"),
+  dplyr::mutate(vr_pr05_Carib$fit, region = "Carib")
+) -> fits
+dplyr::bind_rows(
+  dplyr::mutate(vr_pr05_CT$res, region = "CT"),
+  dplyr::mutate(vr_pr05_SWP$res, region = "SWP"),
+  dplyr::mutate(vr_pr05_Carib$res, region = "Carib")
+) -> res
+p4 <- ggplot(data = fits,aes(x = pr05_log, y = visregFit, group=region, color = region, fill = region)) +
+theme_bw() + geom_point(data = res, aes(x = pr05_log, y = visregRes),show.legend = FALSE, alpha = 0.07, shape = 21, color = "gray") + geom_ribbon(aes(ymin=visregLwr, ymax=visregUpr),show.legend = FALSE,alpha = 0.3, linetype = 0
+  ) + geom_line(size = 0.7, show.legend = FALSE)+ scale_fill_viridis_d(begin = 0.2, end = 0.8, option = "magma") + scale_color_viridis_d(begin = 0.2, end = 0.8, option = "magma")+scale_y_continuous("log odds (minimum cover)")#, limits = c(-10,10))+scale_x_continuous(limits = c(-1,10))
+
+vr_Area_Carib <- visreg(model_Carib, "Area_log", plot = FALSE)
+vr_Area_SWP<- visreg(model_SWP, "Area_log", plot = FALSE)
+vr_Area_CT <- visreg(model_CT, "Area_log", plot = FALSE)
+dplyr::bind_rows(
+  dplyr::mutate(vr_Area_CT$fit, region = "CT"),
+  dplyr::mutate(vr_Area_SWP$fit, region = "SWP"),
+  dplyr::mutate(vr_Area_Carib$fit, region = "Carib")
+) -> fits
+dplyr::bind_rows(
+  dplyr::mutate(vr_Area_CT$res, region = "CT"),
+  dplyr::mutate(vr_Area_SWP$res, region = "SWP"),
+  dplyr::mutate(vr_Area_Carib$res, region = "Carib")
+) -> res
+p5 <- ggplot(data = fits,aes(x = Area_log, y = visregFit, group=region, color = region, fill = region)) +
+theme_bw()+ geom_point(data = res, aes(x = Area_log, y = visregRes),show.legend = FALSE, alpha = 0.07, shape = 21, color = "gray") + geom_ribbon(aes(ymin=visregLwr, ymax=visregUpr), show.legend = FALSE,alpha = 0.3, linetype = 0
+  ) + geom_line(size = 0.7, show.legend = FALSE)+ scale_fill_viridis_d(begin = 0.2, end = 0.8, option = "magma") + scale_color_viridis_d(begin = 0.2, end = 0.8, option = "magma")+scale_y_continuous("log odds (minimum cover)")#, limits = c(-10,10))+scale_x_continuous(limits = c(-10,10))
+
+p_forlegend <-  ggplot(data = fits,aes(x = iSST, y = visregFit, group=region, color = region, fill = region)) +
+  theme_bw() + geom_point(data = res, aes(x = iSST, y = visregRes), alpha = 0.07, shape = 21, color = "gray")+ geom_ribbon(aes(ymin=visregLwr, ymax=visregUpr),alpha = 0.2, linetype = 0
+  ) + geom_line(size = 1)+ scale_fill_viridis_d(begin = 0.2, end = 0.8, option = "magma") + scale_color_viridis_d(begin = 0.2, end = 0.8, option = "magma")+scale_y_continuous("log odds (minimum cover)")#, limits = c(-10,10))+scale_x_continuous(limits = c(-10,10))
+legend <- get_legend(p_forlegend)
+
+grid.arrange(p1, p2, p3, p4,p5,legend, nrow = 3)
+
+```
