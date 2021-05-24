@@ -1,6 +1,6 @@
 # regional_coral_manuscript
 
-Citable as <a href="https://doi.org/10.5281/zenodo.4784134"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4784134.svg" alt="DOI"></a>.
+Citable as <a href="https://doi.org/10.5281/zenodo.4784134"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4784134.svg" alt="DOI"></a>
 
 This repository contains simulated data and associated code for the manuscript 'Evolution and connectivity influence the persistence and recovery of coral reefs under climate change in the Caribbean, Southwest Pacific, and Coral Triangle.'
 
